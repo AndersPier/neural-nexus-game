@@ -1,0 +1,48 @@
+{
+  "name": "neural-nexus-game",
+  "version": "1.0.0",
+  "description": "A modern HTML5 puzzle game where you connect neural network nodes to form complex patterns",
+  "main": "index.html",
+  "scripts": {
+    "dev": "python -m http.server 8000",
+    "serve": "npx http-server -p 8000 -c-1",
+    "test": "echo \"Run manual tests - see docs/testing.md\"",
+    "build": "echo \"No build step required - single HTML file\"",
+    "deploy": "echo \"Deploy via GitHub Pages or copy index.html to hosting platform\"",
+    "lighthouse": "npx lighthouse http://localhost:8000 --output=json --output-path=performance-$(date +%Y%m%d).json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AndersPier/neural-nexus-game.git"
+  },
+  "keywords": [
+    "game",
+    "puzzle",
+    "html5",
+    "canvas",
+    "neural-network",
+    "javascript",
+    "web-game",
+    "brain-training",
+    "puzzle-game",
+    "vanilla-js"
+  ],
+  "author": "Anders Lehmann Pier",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/AndersPier/neural-nexus-game/issues"
+  },
+  "homepage": "https://andersPier.github.io/neural-nexus-game/",
+  "devDependencies": {
+    "http-server": "^14.1.1",
+    "lighthouse": "^10.4.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "browserslist": [
+    "last 2 versions",
+    "> 1%",
+    "not dead"
+  ]
+}
