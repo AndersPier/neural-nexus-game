@@ -9,8 +9,7 @@
     "test": "echo \"Run manual tests - see tests/manual-testing.md\"",
     "build": "echo \"No build step required - single HTML file\"",
     "deploy": "echo \"Copy index.html to hosting platform\"",
-    "lighthouse": "npx lighthouse http://localhost:8000 --output=json --output-path=tests/performance-logs/lighthouse-$(date +%Y%m%d).json",
-    "start": "python -m http.server 8000"
+    "lighthouse": "npx lighthouse http://localhost:8000 --output=json --output-path=tests/performance-logs/lighthouse-$(date +%Y%m%d).json"
   },
   "repository": {
     "type": "git",
@@ -24,16 +23,14 @@
     "neural-network",
     "javascript",
     "web-game",
-    "brain-training",
-    "modern",
-    "responsive"
+    "brain-training"
   ],
-  "author": "Anders Lehmann Pier",
+  "author": "Anders Pier",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/AndersPier/neural-nexus-game/issues"
   },
-  "homepage": "https://andersPier.github.io/neural-nexus-game/",
+  "homepage": "https://github.com/AndersPier/neural-nexus-game#readme",
   "devDependencies": {
     "http-server": "^14.1.1",
     "lighthouse": "^10.4.0"
