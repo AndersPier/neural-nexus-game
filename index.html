@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neural Nexus - Connect the Network</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            position: relative;
+        }
+
+        .game-header {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .game-title {
+            font-size: 2rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #00d4ff, #ff00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+        }
+
+        .game-stats {
+            display: flex;
+            gap: 30px;
+            font-size: 1.1rem;
+        }
+
+        .stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+
+        .stat-value {
+            font-weight: bold;
+            color: #00d4ff;
+        }
+
+        .game-canvas {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            background: transparent;
+        }
+
+        .instructions {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 30px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+        }
+
+        .instructions h2 {
+            color: #00d4ff;
+            margin-bottom: 15px;
+        }
+
+        .instructions p {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
+        .start-btn {
+            background: linear-gradient(45deg, #00d4ff, #ff00ff);
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .start-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(0, 212, 255, 0.4);
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #00d4ff;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .level-complete {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            border: 2px solid #00d4ff;
+            z-index: 1000;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(0, 212, 255, 0.3); }
+            50% { box-shadow: 0 0 40px rgba(0, 212, 255, 0.6); }
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <div class="game-title">NEURAL NEXUS</div>
+            <div class="game-stats">
+                <div class="stat">
+                    <div class="stat-label">LEVEL</div>
+                    <div class="stat-value" id="level">1</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">SCORE</div>
+                    <div class="stat-value" id="score">0</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">TIME</div>
+                    <div class="stat-value" id="timer">60</div>
+                </div>
+            </div>
+        </div>
+        <div class="game-canvas">
+            <canvas id="gameCanvas"></canvas>
+            <div class="instructions" id="instructions">
+                <h2>Welcome to Neural Nexus</h2>
+                <p>🧠 Connect neural nodes to form networks</p>
+                <p>⚡ Click and drag between nodes to create connections</p>
+                <p>🎯 Complete the target network pattern to advance</p>
+                <p>⏰ Beat the clock to maximize your score</p>
+                <button class="start-btn" onclick="startGame()">START NEURAL LINK</button>
+            </div>
+            <div class="level-complete hidden" id="levelComplete">
+                <h2>Neural Network Complete!</h2>
+                <p>Excellent work! Advancing to next level...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game state
+        let gameState = {
+            isPlaying: false,
+            level: 1,
+            score: 0,
+            timeLeft: 60,
+            nodes: [],
+            connections: [],
+            targetPattern: [],
+            dragStart: null,
+            currentConnection: null,
+            particles: []
+        };
+
+        // Canvas setup
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // Node class
+        class Node {
+            constructor(x, y, id, type = 'normal') {
+                this.x = x;
+                this.y = y;
+                this.id = id;
+                this.type = type; // normal, source, target
+                this.radius = 20;
+                this.connections = [];
+                this.pulsePhase = Math.random() * Math.PI * 2;
+                this.energy = 0;
+            }
+
+            draw() {
+                const time = Date.now() * 0.003;
+                const pulse = Math.sin(time + this.pulsePhase) * 0.2 + 1;
+                
+                // Outer glow
+                const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius * 2);
+                
+                if (this.type === 'source') {
+                    gradient.addColorStop(0, 'rgba(0, 255, 100, 0.8)');
+                    gradient.addColorStop(1, 'rgba(0, 255, 100, 0)');
+                } else if (this.type === 'target') {
+                    gradient.addColorStop(0, 'rgba(255, 100, 0, 0.8)');
+                    gradient.addColorStop(1, 'rgba(255, 100, 0, 0)');
+                } else {
+                    gradient.addColorStop(0, `rgba(0, 212, 255, ${0.5 * pulse})`);
+                    gradient.addColorStop(1, 'rgba(0, 212, 255, 0)');
+                }
+                
+                ctx.fillStyle = gradient;
+                ctx.fillRect(this.x - this.radius * 2, this.y - this.radius * 2, this.radius * 4, this.radius * 4);
+
+                // Node core
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius * pulse, 0, Math.PI * 2);
+                
+                if (this.type === 'source') {
+                    ctx.fillStyle = '#00ff64';
+                } else if (this.type === 'target') {
+                    ctx.fillStyle = '#ff6400';
+                } else {
+                    ctx.fillStyle = this.energy > 0 ? '#00d4ff' : '#333366';
+                }
+                
+                ctx.fill();
+                
+                // Inner highlight
+                ctx.beginPath();
+                ctx.arc(this.x - 5, this.y - 5, this.radius * 0.3, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                ctx.fill();
+            }
+
+            isPointInside(x, y) {
+                const dx = x - this.x;
+                const dy = y - this.y;
+                return dx * dx + dy * dy <= this.radius * this.radius;
+            }
+        }
+
+        // Connection class
+        class Connection {
+            constructor(nodeA, nodeB) {
+                this.nodeA = nodeA;
+                this.nodeB = nodeB;
+                this.energy = 0;
+                this.energyDirection = 1;
+            }
+
+            draw() {
+                // Connection line
+                const gradient = ctx.createLinearGradient(this.nodeA.x, this.nodeA.y, this.nodeB.x, this.nodeB.y);
+                gradient.addColorStop(0, '#00d4ff');
+                gradient.addColorStop(0.5, '#ff00ff');
+                gradient.addColorStop(1, '#00d4ff');
+                
+                ctx.strokeStyle = gradient;
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(this.nodeA.x, this.nodeA.y);
+                ctx.lineTo(this.nodeB.x, this.nodeB.y);
+                ctx.stroke();
+
+                // Energy flow
+                if (this.energy > 0) {
+                    const progress = (Date.now() * 0.005) % 1;
+                    const x = this.nodeA.x + (this.nodeB.x - this.nodeA.x) * progress;
+                    const y = this.nodeA.y + (this.nodeB.y - this.nodeA.y) * progress;
+                    
+                    ctx.beginPath();
+                    ctx.arc(x, y, 5, 0, Math.PI * 2);
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fill();
+                }
+            }
+        }
+
+        // Game functions
+        function generateLevel(level) {
+            gameState.nodes = [];
+            gameState.connections = [];
+            gameState.targetPattern = [];
+
+            const nodeCount = Math.min(5 + level, 12);
+            const margin = 100;
+
+            // Generate nodes in a roughly circular pattern
+            for (let i = 0; i < nodeCount; i++) {
+                const angle = (i / nodeCount) * Math.PI * 2;
+                const radius = Math.min(canvas.width, canvas.height) * 0.3;
+                const centerX = canvas.width / 2;
+                const centerY = canvas.height / 2;
+                
+                const x = centerX + Math.cos(angle) * radius + (Math.random() - 0.5) * 100;
+                const y = centerY + Math.sin(angle) * radius + (Math.random() - 0.5) * 100;
+
+                let type = 'normal';
+                if (i === 0) type = 'source';
+                if (i === nodeCount - 1) type = 'target';
+
+                gameState.nodes.push(new Node(x, y, i, type));
+            }
+
+            // Generate target pattern (what connections should exist)
+            const connectionCount = Math.min(nodeCount - 1 + Math.floor(level / 2), nodeCount * 2);
+            const possibleConnections = [];
+            
+            for (let i = 0; i < gameState.nodes.length; i++) {
+                for (let j = i + 1; j < gameState.nodes.length; j++) {
+                    possibleConnections.push([i, j]);
+                }
+            }
+
+            // Shuffle and select connections
+            for (let i = possibleConnections.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [possibleConnections[i], possibleConnections[j]] = [possibleConnections[j], possibleConnections[i]];
+            }
+
+            gameState.targetPattern = possibleConnections.slice(0, connectionCount);
+        }
+
+        function drawTargetPattern() {
+            ctx.save();
+            ctx.setLineDash([5, 5]);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 2;
+
+            gameState.targetPattern.forEach(([nodeAId, nodeBId]) => {
+                const nodeA = gameState.nodes[nodeAId];
+                const nodeB = gameState.nodes[nodeBId];
+                
+                ctx.beginPath();
+                ctx.moveTo(nodeA.x, nodeA.y);
+                ctx.lineTo(nodeB.x, nodeB.y);
+                ctx.stroke();
+            });
+
+            ctx.restore();
+        }
+
+        function getNodeAt(x, y) {
+            return gameState.nodes.find(node => node.isPointInside(x, y));
+        }
+
+        function connectionExists(nodeA, nodeB) {
+            return gameState.connections.some(conn => 
+                (conn.nodeA === nodeA && conn.nodeB === nodeB) ||
+                (conn.nodeA === nodeB && conn.nodeB === nodeA)
+            );
+        }
+
+        function addConnection(nodeA, nodeB) {
+            if (nodeA !== nodeB && !connectionExists(nodeA, nodeB)) {
+                const connection = new Connection(nodeA, nodeB);
+                gameState.connections.push(connection);
+                
+                // Add particle effect
+                createParticleEffect(nodeA.x, nodeA.y);
+                createParticleEffect(nodeB.x, nodeB.y);
+                
+                checkLevelComplete();
+                return true;
+            }
+            return false;
+        }
+
+        function createParticleEffect(x, y) {
+            for (let i = 0; i < 10; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
+                document.body.appendChild(particle);
+
+                const angle = Math.random() * Math.PI * 2;
+                const velocity = 2 + Math.random() * 3;
+                const dx = Math.cos(angle) * velocity;
+                const dy = Math.sin(angle) * velocity;
+
+                let posX = x;
+                let posY = y;
+                let opacity = 1;
+
+                const animate = () => {
+                    posX += dx;
+                    posY += dy;
+                    opacity -= 0.02;
+
+                    particle.style.left = posX + 'px';
+                    particle.style.top = posY + 'px';
+                    particle.style.opacity = opacity;
+
+                    if (opacity > 0) {
+                        requestAnimationFrame(animate);
+                    } else {
+                        particle.remove();
+                    }
+                };
+
+                animate();
+            }
+        }
+
+        function checkLevelComplete() {
+            // Check if all target connections are made
+            const madeConnections = gameState.connections.map(conn => 
+                [Math.min(conn.nodeA.id, conn.nodeB.id), Math.max(conn.nodeA.id, conn.nodeB.id)]
+            );
+
+            const targetConnections = gameState.targetPattern.map(([a, b]) => 
+                [Math.min(a, b), Math.max(a, b)]
+            );
+
+            const allComplete = targetConnections.every(target => 
+                madeConnections.some(made => made[0] === target[0] && made[1] === target[1])
+            );
+
+            if (allComplete) {
+                gameState.score += gameState.timeLeft * 10 + gameState.level * 100;
+                showLevelComplete();
+            }
+        }
+
+        function showLevelComplete() {
+            document.getElementById('levelComplete').classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('levelComplete').classList.add('hidden');
+                gameState.level++;
+                gameState.timeLeft = Math.max(45, 60 - gameState.level * 2);
+                generateLevel(gameState.level);
+                updateUI();
+            }, 2000);
+        }
+
+        function updateUI() {
+            document.getElementById('level').textContent = gameState.level;
+            document.getElementById('score').textContent = gameState.score;
+            document.getElementById('timer').textContent = gameState.timeLeft;
+        }
+
+        function gameLoop() {
+            // Clear canvas
+            ctx.fillStyle = 'rgba(10, 10, 10, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (!gameState.isPlaying) return;
+
+            // Draw target pattern
+            drawTargetPattern();
+
+            // Draw connections
+            gameState.connections.forEach(connection => connection.draw());
+
+            // Draw current connection being created
+            if (gameState.currentConnection) {
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([3, 3]);
+                ctx.beginPath();
+                ctx.moveTo(gameState.dragStart.x, gameState.dragStart.y);
+                ctx.lineTo(gameState.currentConnection.x, gameState.currentConnection.y);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+
+            // Draw nodes
+            gameState.nodes.forEach(node => node.draw());
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Event handlers
+        let mousePos = { x: 0, y: 0 };
+
+        canvas.addEventListener('mousedown', (e) => {
+            if (!gameState.isPlaying) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            mousePos = { x, y };
+
+            const node = getNodeAt(x, y);
+            if (node) {
+                gameState.dragStart = node;
+                gameState.currentConnection = { x, y };
+            }
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            mousePos = { x, y };
+
+            if (gameState.currentConnection) {
+                gameState.currentConnection = { x, y };
+            }
+        });
+
+        canvas.addEventListener('mouseup', (e) => {
+            if (!gameState.isPlaying || !gameState.dragStart) return;
+
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            const endNode = getNodeAt(x, y);
+            if (endNode && endNode !== gameState.dragStart) {
+                addConnection(gameState.dragStart, endNode);
+            }
+
+            gameState.dragStart = null;
+            gameState.currentConnection = null;
+        });
+
+        // Game timer
+        setInterval(() => {
+            if (gameState.isPlaying && gameState.timeLeft > 0) {
+                gameState.timeLeft--;
+                updateUI();
+                
+                if (gameState.timeLeft === 0) {
+                    alert('Time\'s up! Game Over. Final Score: ' + gameState.score);
+                    gameState.isPlaying = false;
+                    document.getElementById('instructions').classList.remove('hidden');
+                }
+            }
+        }, 1000);
+
+        function startGame() {
+            gameState.isPlaying = true;
+            gameState.level = 1;
+            gameState.score = 0;
+            gameState.timeLeft = 60;
+            
+            document.getElementById('instructions').classList.add('hidden');
+            generateLevel(gameState.level);
+            updateUI();
+        }
+
+        // Start the game loop
+        gameLoop();
+    </script>
+</body>
+</html>
