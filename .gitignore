@@ -1,0 +1,94 @@
+# System files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/settings.json
+.vscode/launch.json
+.idea/
+*.sublime-*
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Build outputs
+dist/
+build/
+out/
+builds/*/output/
+
+# Dependencies
+node_modules/
+jspm_packages/
+
+# Optional npm cache directory
+.npm
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Cache directories
+.cache/
+.parcel-cache/
+.next/
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# Compressed assets during development
+*.zip
+*.tar.gz
+*.rar
+
+# Large asset files (use Git LFS if needed)
+assets/**/*.mov
+assets/**/*.mp4
+assets/**/*.avi
+assets/**/*.wav
+assets/**/*.mp3
+assets/**/*.flac
+
+# Test results
+tests/results/
+tests/screenshots/
+performance-logs/*.json
+
+# Development tools
+tools/*/output/
+tools/*/temp/
+
+# Mobile build artifacts
+builds/mobile/platforms/
+builds/mobile/plugins/
+
+# PWA build artifacts
+builds/pwa/workbox-*
+builds/pwa/precache-*
+
+# Analytics and monitoring
+analytics/
+monitoring/
