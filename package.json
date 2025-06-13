@@ -1,15 +1,16 @@
 {
   "name": "neural-nexus-game",
   "version": "1.0.0",
-  "description": "A modern HTML5 puzzle game where you connect neural network nodes to form complex patterns",
+  "description": "A modern HTML5 puzzle game featuring neural network connectivity challenges",
   "main": "index.html",
   "scripts": {
     "dev": "python -m http.server 8000",
     "serve": "npx http-server -p 8000 -c-1",
-    "test": "echo \"Run manual tests - see docs/testing.md\"",
+    "test": "echo \"Run manual tests - see tests/manual-testing.md\"",
     "build": "echo \"No build step required - single HTML file\"",
-    "deploy": "echo \"Deploy via GitHub Pages or copy index.html to hosting platform\"",
-    "lighthouse": "npx lighthouse http://localhost:8000 --output=json --output-path=performance-$(date +%Y%m%d).json"
+    "deploy": "echo \"Copy index.html to hosting platform\"",
+    "lighthouse": "npx lighthouse http://localhost:8000 --output=json --output-path=tests/performance-logs/lighthouse-$(date +%Y%m%d).json",
+    "start": "python -m http.server 8000"
   },
   "repository": {
     "type": "git",
@@ -24,8 +25,8 @@
     "javascript",
     "web-game",
     "brain-training",
-    "puzzle-game",
-    "vanilla-js"
+    "modern",
+    "responsive"
   ],
   "author": "Anders Lehmann Pier",
   "license": "MIT",
@@ -39,10 +40,5 @@
   },
   "engines": {
     "node": ">=14.0.0"
-  },
-  "browserslist": [
-    "last 2 versions",
-    "> 1%",
-    "not dead"
-  ]
+  }
 }
